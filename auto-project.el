@@ -1,4 +1,4 @@
-;;; git-project-list.el --- Loads modes based on git project
+;;; auto-project.el --- Loads modes based on git project
 
 ;; Copyright (C) 2014 Pierre Larochelle
 
@@ -30,42 +30,44 @@
 (require 'project-root)
 (require 'dash)
 
-(defgroup git-project-list ()
+(defgroup auto-project ()
   "Customize group for git-project-list.el"
   :group 'lisp
-  :prefix "gitlist")
+  :prefix "auto-project")
 
 (require 'dash)
 
-(defvar gitlist-auto-mode-alist '())
+(defvar auto-project-mode-alist '())
 
-(defun gitlist-root-config-path ()
-  (ignore-errors (with-project-root
-                     (concat default-directory ".git/config"))))
+(defun auto-project-root-config-path ()
+  (with-project-root
+      (concat default-directory ".git/config")))
 
-(defun gitlist-config-file ()
-  (let ((config-path (gitlist-root-config-path)))
+(defun auto-project-config-file ()
+  (let ((config-path (auto-project-root-config-path)))
     (if (file-regular-p (or config-path ""))
         config-path)))
 
-(defun gitlist-file-has-string-p (file s)
+(defun auto-project-file-has-string-p (file s)
   (with-temp-buffer
     (insert-file-contents file)
     (search-forward s nil t)))
 
-(defun gitlist-matching-modes ()
-  (let ((current-config (gitlist-config-file)))
+(defun auto-project-matching-modes ()
+  (let ((current-config (auto-project-config-file)))
     (if current-config
-        (--filter (gitlist-file-has-string-p current-config (car it))
-                                   gitlist-auto-mode-alist)
+        (--filter (auto-project-file-has-string-p current-config (car it))
+                                   auto-project-mode-alist)
       '())))
 
-(defun gitlist-add-hooks ()
+(defun auto-project-add-hooks ()
   ;; only prints matching alists
-  (message (format "%s" (gitlist-matching-modes))))
+  (message (format "%s" (auto-project-matching-modes))))
+
+(add-to-list 'find-file-hook 'auto-project-add-hooks)
 
 ;; for testing
-(add-to-list 'gitlist-auto-mode-alist '("blurb/blurby.git" . blurb))
+(add-to-list 'auto-project-mode-alist '("blurb/blurby.git" . blurb))
 
 
 
