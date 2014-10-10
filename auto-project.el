@@ -56,20 +56,21 @@
 (defun auto-project-matching-modes ()
   (let ((current-config (auto-project-config-file)))
     (if current-config
-        (--filter (auto-project-file-has-string-p current-config (car it))
-                                   auto-project-mode-alist)
+        (-map 'cdr 
+              (--filter (auto-project-file-has-string-p current-config (car it))
+                        auto-project-mode-alist))
       '())))
 
+(defun auto-project-enable-modes (modes)
+  (-each (lambda (new-mode)
+           (new-mode))
+    modes))
+
 (defun auto-project-add-hooks ()
-  ;; only prints matching alists
-  (message (format "%s" (auto-project-matching-modes))))
+  (auto-project-enable-modes (auto-project-matching-modes)))
 
 (add-to-list 'find-file-hook 'auto-project-add-hooks)
 
 ;; for testing
-(add-to-list 'auto-project-mode-alist '("blurb/blurby.git" . blurb))
-
-
-
-
+(add-to-list 'auto-project-mode-alist '("blurb/blurby.git" . blurb-mode))
 
