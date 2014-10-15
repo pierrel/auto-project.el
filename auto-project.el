@@ -58,13 +58,13 @@
     (if current-config
         (-map 'cdr 
               (--filter (auto-project-file-has-string-p current-config (car it))
-                        auto-project-mode-alist))
-      '())))
+                        auto-project-mode-alist)))))
 
 (defun auto-project-enable-modes (modes)
-  (-each (lambda (new-mode)
-           (new-mode))
-    modes))
+  (if modes
+      (-each (lambda (new-mode)
+               (message (format "%s" (car new-mode))))
+        modes)))
 
 (defun auto-project-add-hooks ()
   (auto-project-enable-modes (auto-project-matching-modes)))
@@ -74,3 +74,4 @@
 ;; for testing
 (add-to-list 'auto-project-mode-alist '("blurb/blurby.git" . blurb-mode))
 
+(auto-project-enable-modes '("he"))
