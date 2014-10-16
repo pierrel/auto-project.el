@@ -28,50 +28,22 @@
 ;;; Code:
 
 (require 'project-root)
-(require 'dash)
 
 (defgroup auto-project ()
   "Customize group for git-project-list.el"
   :group 'lisp
   :prefix "auto-project")
 
-(require 'dash)
-
-(defvar auto-project-mode-alist '())
-
-(defun auto-project-root-config-path ()
-  (with-project-root
-      (concat default-directory ".git/config")))
-
 (defun auto-project-config-file ()
-  (let ((config-path (auto-project-root-config-path)))
-    (if (file-regular-p (or config-path ""))
-        config-path)))
+  (with-project-root
+      (concat default-directory ".emacs-config.el")))
 
-(defun auto-project-file-has-string-p (file s)
-  (with-temp-buffer
-    (insert-file-contents file)
-    (search-forward s nil t)))
+(defun auto-project-has-config-p ()
+  (file-regular-p (auto-project-config-file)))
 
-(defun auto-project-matching-modes ()
-  (let ((current-config (auto-project-config-file)))
-    (if current-config
-        (-map 'cdr 
-              (--filter (auto-project-file-has-string-p current-config (car it))
-                        auto-project-mode-alist)))))
+(defun auto-project-load-config ()
+  (ignore-errors
+    (if (auto-project-has-config-p)
+        (load-file (auto-project-config-file)))))
 
-(defun auto-project-enable-modes (modes)
-  (if modes
-      (-each (lambda (new-mode)
-               (message (format "%s" (car new-mode))))
-        modes)))
-
-(defun auto-project-add-hooks ()
-  (auto-project-enable-modes (auto-project-matching-modes)))
-
-(add-to-list 'find-file-hook 'auto-project-add-hooks)
-
-;; for testing
-(add-to-list 'auto-project-mode-alist '("blurb/blurby.git" . blurb-mode))
-
-(auto-project-enable-modes '("he"))
+(add-to-list 'find-file-hook 'auto-project-load-config)
