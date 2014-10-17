@@ -23,27 +23,34 @@
 
 ;; A way to load modes based on git project
 ;;
-;; See documentation on https://github.com/pierrel/git-project-list
+;; See documentation on https://github.com/pierrel/auto-project.el
 
 ;;; Code:
 
 (require 'project-root)
+(require 'dash)
 
 (defgroup auto-project ()
-  "Customize group for git-project-list.el"
+  "Customize group for auto-project.el"
   :group 'lisp
   :prefix "auto-project")
+
+(defvar *auto-project-configs* '())
 
 (defun auto-project-config-file ()
   (with-project-root
       (concat default-directory ".emacs-config.el")))
 
-(defun auto-project-has-config-p ()
-  (file-regular-p (auto-project-config-file)))
+(defun auto-project-load-file (file)
+  (if (not (-contains? *auto-project-configs* file))
+      (progn
+        (add-to-list '*auto-project-configs* file)
+        (load-file file))))
 
 (defun auto-project-load-config ()
   (ignore-errors
-    (if (auto-project-has-config-p)
-        (load-file (auto-project-config-file)))))
+    (let ((config-file (auto-project-config-file)))
+      (if (file-regular-p config-file)
+        (auto-project-load-file config-file)))))
 
 (add-to-list 'find-file-hook 'auto-project-load-config)
